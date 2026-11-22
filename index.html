@@ -97,6 +97,17 @@
     padding: 5px 12px; border-radius: 999px; background: var(--surface-2); color: var(--text);
   }
   nav.cats a:hover { background: var(--accent); color: var(--accent-text); }
+  nav.cats a.feature { background: transparent; border: 1px solid var(--accent); color: var(--accent); }
+  nav.cats a.feature:hover { background: var(--accent); color: var(--accent-text); }
+
+  /* 特集ページへの案内 */
+  .feature-link {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+    margin: 18px 0 0; padding: 12px 16px; border-radius: 10px; text-decoration: none;
+    background: var(--surface); border: 1px dashed var(--muted); font-size: .92rem;
+  }
+  .feature-link:hover { border-style: solid; border-color: var(--accent); }
+  .feature-link .go { color: var(--accent); font-weight: 600; white-space: nowrap; }
   .theme-toggle {
     margin-left: auto; flex: none; border: 1px solid var(--line); background: var(--surface); color: var(--text);
     border-radius: 999px; padding: 4px 10px; font-size: .85rem; cursor: pointer;
@@ -171,6 +182,7 @@
       <li><a href="#x68sw">X68000 ソフトウェア</a></li>
       <li><a href="#controller">ゲームコントローラ</a></li>
       <li><a href="#other">その他</a></li>
+      <li><a class="feature" href="rogue/">ローグ・クローンII →</a></li>
     </ul>
     <button class="theme-toggle" type="button" aria-label="明暗の切り替え">◐</button>
   </div>
@@ -321,6 +333,10 @@
         </a>
 
       </div>
+      <a class="feature-link" href="rogue/">
+        <span>ローグ・クローンII の X68000 版と Raspberry Pi 版は、遊び方や系譜をまとめたページがあります。</span>
+        <span class="go">ローグ・クローンII のページ →</span>
+      </a>
     </div>
   </section>
 
@@ -387,6 +403,10 @@
         </a>
 
       </div>
+      <a class="feature-link" href="rogue/">
+        <span>ローグ・クローンII の X68000 版と Raspberry Pi 版は、遊び方や系譜をまとめたページがあります。</span>
+        <span class="go">ローグ・クローンII のページ →</span>
+      </a>
     </div>
   </section>
 </main>

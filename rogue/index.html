@@ -1,0 +1,370 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ローグ・クローンII 移植版</title>
+<meta name="description" content="ローグ・クローンII を X68000 と Raspberry Pi で遊べるようにした移植版のまとめページです。">
+<meta property="og:title" content="ローグ・クローンII 移植版 | yagennankoz の工作室">
+<meta property="og:description" content="ローグ・クローンII を X68000 と Raspberry Pi で遊べるようにした移植版">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://yagennankoz.github.io/rogue/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%231d211f'/%3E%3Ctext x='8' y='12.5' font-family='monospace' font-size='12' font-weight='bold' text-anchor='middle' fill='%23e8c35a'%3E@%3C/text%3E%3C/svg%3E">
+<style>
+  :root {
+    --bg: #ecebe6;
+    --surface: #fbfaf7;
+    --surface-2: #e2e0d9;
+    --text: #23231f;
+    --muted: #66655d;
+    --line: #cfccc2;
+    --accent: #b8321f;
+    --accent-text: #ffffff;
+    --screen-bg: #1d211f;
+    --screen-text: #c9ccc4;
+    --screen-wall: #8a8f86;
+    --screen-hero: #e8c35a;
+    --screen-item: #7fd0a0;
+    --screen-mon: #e0644e;
+    --shadow: 0 1px 2px rgba(0,0,0,.06), 0 4px 14px rgba(0,0,0,.06);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #161715;
+      --surface: #212320;
+      --surface-2: #2b2d29;
+      --text: #e9e8e2;
+      --muted: #a3a298;
+      --line: #393b36;
+      --accent: #e0644e;
+      --accent-text: #1a1a1a;
+      --screen-bg: #0d0f0e;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 4px 14px rgba(0,0,0,.25);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #161715;
+    --surface: #212320;
+    --surface-2: #2b2d29;
+    --text: #e9e8e2;
+    --muted: #a3a298;
+    --line: #393b36;
+    --accent: #e0644e;
+    --accent-text: #1a1a1a;
+    --screen-bg: #0d0f0e;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 4px 14px rgba(0,0,0,.25);
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; scroll-padding-top: 72px; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic UI", "Meiryo", system-ui, sans-serif;
+    line-height: 1.75;
+    -webkit-text-size-adjust: 100%;
+  }
+  a { color: inherit; }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 0 16px; }
+  .mono, pre, code { font-family: "Consolas", "Menlo", "Osaka-Mono", "MS Gothic", monospace; }
+
+  /* 上部のパンくず */
+  .crumb { padding-top: 18px; font-size: .88rem; color: var(--muted); }
+  .crumb a { text-decoration: none; }
+  .crumb a:hover { text-decoration: underline; }
+
+  /* ヘッダー */
+  header.hero { padding: 20px 0 8px; }
+  .hero h1 { font-size: clamp(1.7rem, 4.5vw, 2.5rem); line-height: 1.25; margin: 0 0 10px; letter-spacing: .02em; }
+  .hero p.lead { margin: 0 0 22px; color: var(--muted); max-width: 44em; }
+
+  /* ダンジョンの画面 */
+  .screen {
+    background: var(--screen-bg); color: var(--screen-text);
+    border-radius: 10px; padding: 18px 20px; margin: 0;
+    font-size: clamp(.62rem, 2.35vw, .95rem); line-height: 1.35;
+    overflow-x: auto; box-shadow: var(--shadow);
+    background-image: repeating-linear-gradient(0deg, rgba(255,255,255,.03) 0 1px, transparent 1px 3px);
+  }
+  .screen .w { color: var(--screen-wall); }
+  .screen .h { color: var(--screen-hero); font-weight: bold; }
+  .screen .i { color: var(--screen-item); }
+  .screen .m { color: var(--screen-mon); font-weight: bold; }
+  .screen .msg { color: var(--screen-text); }
+  .screen-caption { font-size: .8rem; color: var(--muted); margin: 8px 2px 0; }
+
+  /* ページ内ナビ */
+  nav.toc {
+    position: sticky; top: 0; z-index: 10; margin-top: 28px;
+    background: color-mix(in srgb, var(--bg) 88%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--line);
+  }
+  nav.toc .wrap { display: flex; align-items: center; gap: 8px; }
+  nav.toc ul { flex: 1; min-width: 0; list-style: none; margin: 0; padding: 10px 0; display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; }
+  nav.toc ul::-webkit-scrollbar { display: none; }
+  nav.toc a {
+    display: block; white-space: nowrap; text-decoration: none; font-size: .88rem;
+    padding: 5px 12px; border-radius: 999px; background: var(--surface-2);
+  }
+  nav.toc a:hover { background: var(--accent); color: var(--accent-text); }
+  .theme-toggle {
+    flex: none; border: 1px solid var(--line); background: var(--surface); color: var(--text);
+    border-radius: 999px; padding: 4px 10px; font-size: .85rem; cursor: pointer;
+  }
+
+  section { padding: 40px 0 4px; }
+  h2 { font-size: 1.3rem; margin: 0 0 14px; display: flex; align-items: baseline; gap: 10px; }
+  h2::before { content: ""; width: 10px; height: 10px; background: var(--accent); border-radius: 2px; flex: none; transform: translateY(-1px); }
+  h3 { font-size: 1.05rem; margin: 22px 0 6px; }
+  p { margin: 0 0 12px; }
+  .muted { color: var(--muted); }
+
+  /* 移植版のカード */
+  .ports { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 400px), 1fr)); gap: 18px; }
+  .port {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
+    padding: 18px 20px 20px; box-shadow: var(--shadow); min-width: 0;
+  }
+  .port .head { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-bottom: 4px; }
+  .port h3 { margin: 0; font-size: 1.2rem; }
+  .port .repo {
+    display: inline-flex; align-items: center; gap: 6px; text-decoration: none; font-size: .85rem;
+    padding: 4px 12px; border-radius: 6px; border: 1px solid var(--line); background: var(--bg);
+  }
+  .port .repo:hover { border-color: var(--text); }
+  .port .repo svg { width: 15px; height: 15px; fill: currentColor; }
+  .port h4 { font-size: .92rem; margin: 18px 0 6px; color: var(--muted); font-weight: 600; }
+  .port ul { margin: 0; padding-left: 1.3em; font-size: .92rem; }
+  .port li { margin: 2px 0; }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 0; padding: 0; list-style: none; }
+  .port .tags { padding-left: 0; }
+  .tags li { font-size: .75rem; padding: 1px 8px; border-radius: 4px; background: var(--surface-2); margin: 0; }
+  .tags li.lang { background: transparent; border: 1px solid var(--line); }
+
+  pre.cmd {
+    background: var(--screen-bg); color: #d6d8d0; border-radius: 6px;
+    padding: 10px 14px; margin: 0; font-size: .82rem; line-height: 1.55; overflow-x: auto;
+  }
+  pre.cmd .c { color: #8a8f86; }
+  code { background: var(--surface-2); padding: 1px 5px; border-radius: 4px; font-size: .88em; }
+
+  /* 系譜 */
+  ol.lineage { list-style: none; margin: 0; padding: 0; position: relative; }
+  ol.lineage::before { content: ""; position: absolute; left: 7px; top: 10px; bottom: 10px; width: 2px; background: var(--line); }
+  ol.lineage li { position: relative; padding: 0 0 16px 30px; }
+  ol.lineage li::before {
+    content: ""; position: absolute; left: 1px; top: 8px; width: 14px; height: 14px; border-radius: 50%;
+    background: var(--surface); border: 2px solid var(--muted);
+  }
+  ol.lineage li.mine::before { background: var(--accent); border-color: var(--accent); }
+  ol.lineage .name { font-weight: 600; }
+  ol.lineage .by { color: var(--muted); font-size: .9rem; }
+  ol.lineage .note { display: block; font-size: .88rem; color: var(--muted); }
+  ol.lineage .branch { margin: 6px 0 0; padding: 10px 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; font-size: .9rem; }
+
+  footer { margin-top: 56px; padding: 24px 0 40px; border-top: 1px solid var(--line); color: var(--muted); font-size: .85rem; }
+  footer a { text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+</style>
+<script>
+  // テーマの切り替え（保存できない環境でも表示には影響しない）
+  try { const t = localStorage.getItem("theme"); if (t) document.documentElement.dataset.theme = t; } catch (e) {}
+</script>
+</head>
+<body>
+
+<div class="wrap crumb"><a href="../">← yagennankoz の工作室</a></div>
+
+<header class="hero">
+  <div class="wrap">
+    <h1>ローグ・クローンII 移植版</h1>
+    <p class="lead">地下深くのダンジョンにもぐり、宝を持ち帰るダンジョン RPG「ローグ・クローンII」の日本語版を、X68000 と Raspberry Pi で遊べるようにしました。</p>
+<pre class="screen" aria-label="ゲーム画面のイメージ">
+<span class="w">     -----------+--</span>
+<span class="w">     |</span>.....<span class="i">!</span>.......<span class="w">|</span>
+<span class="w">     |</span>..........<span class="i">*</span>.<span class="w">+</span>#########
+<span class="w">     |</span>...<span class="h">@</span>........<span class="w">|</span>        #     <span class="w">-----+------</span>
+<span class="w">     |</span>.........<span class="i">]</span>..<span class="w">|</span>        ######<span class="w">+</span>..........<span class="w">|</span>
+<span class="w">     --------------</span>              <span class="w">|</span>...<span class="m">K</span>......<span class="w">|</span>
+                                 <span class="w">|</span>.......<span class="i">%</span>..<span class="w">|</span>
+                                 <span class="w">|</span>......<span class="i">%</span>...<span class="w">|</span>
+                                 <span class="w">------------</span>
+</pre>
+    <p class="screen-caption">画面はイメージです。<span class="mono">@</span> が自分、アルファベットが怪物、記号がアイテムを表します。</p>
+  </div>
+</header>
+
+<nav class="toc" aria-label="このページの目次">
+  <div class="wrap">
+    <ul>
+      <li><a href="#about">どんなゲーム？</a></li>
+      <li><a href="#x68k">X68000 版</a></li>
+      <li><a href="#pi">Raspberry Pi 版</a></li>
+      <li><a href="#lineage">系譜</a></li>
+      <li><a href="#license">ライセンス</a></li>
+    </ul>
+    <button class="theme-toggle" type="button" aria-label="明暗の切り替え">◐</button>
+  </div>
+</nav>
+
+<main>
+  <section id="about">
+    <div class="wrap">
+      <h2>どんなゲーム？</h2>
+      <p>ローグ・クローンII は、古典的なダンジョン RPG「Rogue」を再現したゲームです。目的は、地下 27 階に眠る宝「イェルダーの魔除け」を手に入れて地上に持ち帰ること。</p>
+      <p>ダンジョンは冒険のたびに作り直されるので、毎回ちがう地形、ちがうアイテム、ちがう怪物に出会えます。画面は文字だけで描かれ、ターン制で進むので、じっくり考えながら遊べます。</p>
+      <p class="muted">ここで紹介している移植版は、どちらも日本語のメッセージで遊べます。英語のメッセージファイルも同梱しています。</p>
+    </div>
+  </section>
+
+  <section id="ports">
+    <div class="wrap">
+      <h2>移植版</h2>
+      <div class="ports">
+
+        <!-- ===== X68000 版 ===== -->
+        <article class="port" id="x68k">
+          <div class="head">
+            <h3>X68000 版</h3>
+            <a class="repo" href="https://github.com/yagennankoz/RogueClone2X68k">
+              <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+              RogueClone2X68k
+            </a>
+          </div>
+          <p class="muted" style="font-size:.92rem;margin:6px 0 0">「データ分離版ローグ・クローンII」を X68000 / X68000 Z 用にビルドしたものです。</p>
+          <ul class="tags"><li class="lang">C</li><li>X68000</li><li>X68000 Z</li><li>Human68k</li></ul>
+
+          <h4>入っているもの</h4>
+          <ul>
+            <li><code>rogue.x</code> … ゲーム本体</li>
+            <li><code>Rogue.xdf</code> … 一式を収めたディスクイメージ</li>
+            <li><code>start_rogue.bat</code> … プレイ・スコア表示を選べるメニュー</li>
+            <li><code>msg/mesg</code>（日本語）、<code>msg/mesg_E</code>（英語）… メッセージファイル</li>
+          </ul>
+
+          <h4>遊び方</h4>
+          <p style="font-size:.92rem">メニューから始めるときは <code>start_rogue</code>、直接始めるときはメッセージファイルを指定して起動します。</p>
+<pre class="cmd">A&gt;start_rogue
+<span class="c">  1: rogueをプレイ / 2: スコア表示 / q: 終了</span>
+<span class="c">  （1 を選ぶとプレイヤー名を聞かれます）</span>
+
+A&gt;rogue msg\mesg       <span class="c">… 直接プレイ</span>
+A&gt;rogue msg\mesg -s    <span class="c">… スコアを表示</span></pre>
+
+          <h4>動作確認</h4>
+          <ul>
+            <li>XM6 TypeG（エミュレータ）と X68000 Z で起動を確認しています。</li>
+            <li>X68000 の実機ではテストしていません。</li>
+          </ul>
+        </article>
+
+        <!-- ===== Raspberry Pi 版 ===== -->
+        <article class="port" id="pi">
+          <div class="head">
+            <h3>Raspberry Pi 版</h3>
+            <a class="repo" href="https://github.com/yagennankoz/RogueClone2Pi">
+              <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+              RogueClone2Pi
+            </a>
+          </div>
+          <p class="muted" style="font-size:.92rem;margin:6px 0 0">鈴木維一郎氏の「rogueclone2（UTF-8 版）」を、Raspberry Pi のターミナルで正しく表示されるように直したものです。</p>
+          <ul class="tags"><li class="lang">C</li><li>Raspberry Pi</li><li>Linux</li><li>ncurses</li><li>UTF-8</li></ul>
+
+          <h4>元の版からの主な変更</h4>
+          <ul>
+            <li>背景色を透過するようにしました（ターミナルの背景色がそのまま使えます）</li>
+            <li>スコアのランキングを UTF-8 で正しく表示できるようにしました</li>
+            <li>ニックネームを使ったときのランキング表示を直しました</li>
+            <li>ビルド時の警告に対応しました</li>
+          </ul>
+
+          <h4>ビルドと起動</h4>
+<pre class="cmd"><span class="c"># 必要なパッケージを入れる</span>
+$ sudo apt install -y automake \
+    libncurses5-dev libncursesw5-dev
+
+<span class="c"># ビルド</span>
+$ autoreconf -i
+$ ./configure
+$ make clean
+$ make
+$ cp src/rogue .
+
+<span class="c"># 起動（英語で遊ぶときは mesg_E）</span>
+$ ./rogue mesg</pre>
+        </article>
+
+      </div>
+    </div>
+  </section>
+
+  <section id="lineage">
+    <div class="wrap">
+      <h2>系譜</h2>
+      <p class="muted">ローグ・クローンII は、多くの人の手を経て受け継がれてきました。ここで紹介している移植版は、次の流れの上にあります。</p>
+      <ol class="lineage">
+        <li>
+          <span class="name">Rogue Clone</span> <span class="by">— Tim Stoehr 氏</span>
+          <span class="note">Rogue を再現したゲーム。ソースコードが公開され、ここからさまざまな版が生まれました。</span>
+        </li>
+        <li>
+          <span class="name">ローグ・クローン2 日本語版 1.3</span> <span class="by">— 太田純 氏</span>
+          <span class="note">日本語化した版。</span>
+        </li>
+        <li>
+          <span class="name">データ分離版ローグ・クローンII</span> <span class="by">— 伊藤康史 氏</span>
+          <span class="note">メッセージをデータファイルに分け、言語を切り替えられるようにした版。</span>
+          <div class="branch"><strong>→ X68000 版</strong>（RogueClone2X68k）はここから。X68000 / X68000 Z 向けにビルドしました。</div>
+        </li>
+        <li>
+          <span class="name">rogueclone2s</span> <span class="by">— FUNABARA Masao 氏</span>
+          <span class="note">データ分離版のメンテナンスバージョン。</span>
+        </li>
+        <li>
+          <span class="name">rogueclone2s-utf8</span> <span class="by">— Naohiro Aota 氏</span>
+          <span class="note">ターミナルへの出力を UTF-8 に対応させた版。</span>
+        </li>
+        <li>
+          <span class="name">rogueclone2（UTF-8 版）</span> <span class="by">— 鈴木維一郎 氏</span>
+          <span class="note">メッセージファイルやソースコードも含め、すべてを UTF-8 にした版。</span>
+        </li>
+        <li class="mine">
+          <span class="name">RogueClone2Pi</span> <span class="by">— yagennankoz</span>
+          <span class="note">Raspberry Pi での表示の不具合を直した版。</span>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <section id="license">
+    <div class="wrap">
+      <h2>ライセンス</h2>
+      <p>ライセンスは、元になった「データ分離版ローグ・クローンII」と「ローグ・クローン２ 日本語版１.３」の条件に従います。詳しくは各リポジトリに同梱しているドキュメント（RogueClone2Pi の <code>COPYING</code>、RogueClone2X68k の <code>original_doc/</code>）をご覧ください。</p>
+      <p class="muted">移植版についてのお問い合わせは、元の版の作者の方々ではなく、各リポジトリの Issue へお願いします。</p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <a href="../">← yagennankoz の工作室に戻る</a><br>
+    © yagennankoz
+  </div>
+</footer>
+
+<script>
+  // 明暗テーマのボタン（トップページと設定を共有）
+  document.querySelector(".theme-toggle").addEventListener("click", () => {
+    const root = document.documentElement;
+    const isDark = root.dataset.theme
+      ? root.dataset.theme === "dark"
+      : matchMedia("(prefers-color-scheme: dark)").matches;
+    const next = isDark ? "light" : "dark";
+    root.dataset.theme = next;
+    try { localStorage.setItem("theme", next); } catch (e) {}
+  });
+</script>
+</body>
+</html>
