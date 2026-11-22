@@ -1,0 +1,414 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>yagennankoz の工作室</title>
+<meta name="description" content="yagennankoz が GitHub で公開しているレトロPC向けのハードウェア・ソフトウェアの一覧です。">
+<meta property="og:title" content="yagennankoz の工作室">
+<meta property="og:description" content="X68000・PC-8801 などレトロPC向けのハードウェアとソフトウェアの一覧">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://yagennankoz.github.io/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%23333'/%3E%3Crect x='3' y='4' width='10' height='6' fill='%237fd0a0'/%3E%3Crect x='5' y='12' width='6' height='1.5' fill='%23aaa'/%3E%3C/svg%3E">
+<style>
+  :root {
+    --bg: #ecebe6;
+    --surface: #fbfaf7;
+    --surface-2: #e2e0d9;
+    --text: #23231f;
+    --muted: #66655d;
+    --line: #cfccc2;
+    --accent: #b8321f;
+    --accent-text: #ffffff;
+    --screen-bg: #1d211f;
+    --screen-text: #7fd0a0;
+    --shadow: 0 1px 2px rgba(0,0,0,.06), 0 4px 14px rgba(0,0,0,.06);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #161715;
+      --surface: #212320;
+      --surface-2: #2b2d29;
+      --text: #e9e8e2;
+      --muted: #a3a298;
+      --line: #393b36;
+      --accent: #e0644e;
+      --accent-text: #1a1a1a;
+      --screen-bg: #0d0f0e;
+      --screen-text: #8be0ad;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 4px 14px rgba(0,0,0,.25);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #161715;
+    --surface: #212320;
+    --surface-2: #2b2d29;
+    --text: #e9e8e2;
+    --muted: #a3a298;
+    --line: #393b36;
+    --accent: #e0644e;
+    --accent-text: #1a1a1a;
+    --screen-bg: #0d0f0e;
+    --screen-text: #8be0ad;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 4px 14px rgba(0,0,0,.25);
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; scroll-padding-top: 72px; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic UI", "Meiryo", system-ui, sans-serif;
+    line-height: 1.7;
+    -webkit-text-size-adjust: 100%;
+  }
+  a { color: inherit; }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 16px; }
+  .mono { font-family: "Consolas", "Menlo", "Osaka-Mono", "MS Gothic", monospace; }
+
+  /* ヘッダー */
+  header.hero { padding: 48px 0 28px; }
+  .hero h1 { font-size: clamp(1.7rem, 4.5vw, 2.5rem); line-height: 1.25; margin: 0 0 10px; letter-spacing: .02em; }
+  .hero h1 .cursor { color: var(--accent); animation: blink 1.1s steps(1) infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) { .hero h1 .cursor { animation: none; } }
+  .hero p { margin: 0; color: var(--muted); max-width: 46em; }
+  .hero .links { margin-top: 18px; display: flex; flex-wrap: wrap; gap: 10px; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 7px 14px; border-radius: 6px; text-decoration: none; font-size: .92rem;
+    border: 1px solid var(--line); background: var(--surface);
+  }
+  .btn:hover { border-color: var(--text); }
+  .btn svg { width: 16px; height: 16px; fill: currentColor; }
+
+  /* カテゴリのナビ */
+  nav.cats {
+    position: sticky; top: 0; z-index: 10;
+    background: color-mix(in srgb, var(--bg) 88%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--line);
+  }
+  nav.cats ul { flex: 1; min-width: 0; list-style: none; margin: 0; padding: 10px 0; display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; }
+  nav.cats ul::-webkit-scrollbar { display: none; }
+  nav.cats a {
+    display: block; white-space: nowrap; text-decoration: none; font-size: .88rem;
+    padding: 5px 12px; border-radius: 999px; background: var(--surface-2); color: var(--text);
+  }
+  nav.cats a:hover { background: var(--accent); color: var(--accent-text); }
+  .theme-toggle {
+    margin-left: auto; flex: none; border: 1px solid var(--line); background: var(--surface); color: var(--text);
+    border-radius: 999px; padding: 4px 10px; font-size: .85rem; cursor: pointer;
+  }
+
+  /* セクション */
+  section.cat { padding: 36px 0 8px; }
+  section.cat h2 {
+    font-size: 1.25rem; margin: 0 0 4px; display: flex; align-items: baseline; gap: 10px;
+  }
+  section.cat h2::before { content: ""; width: 10px; height: 10px; background: var(--accent); border-radius: 2px; flex: none; transform: translateY(-1px); }
+  section.cat > .wrap > p { margin: 0 0 18px; color: var(--muted); font-size: .92rem; }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); gap: 18px; }
+
+  /* カード */
+  .card {
+    display: flex; flex-direction: column;
+    background: var(--surface); border: 1px solid var(--line); border-radius: 10px; overflow: hidden;
+    box-shadow: var(--shadow); text-decoration: none; transition: transform .15s ease, border-color .15s ease;
+  }
+  .card:hover { transform: translateY(-2px); border-color: var(--muted); }
+  .card .thumb { aspect-ratio: 4 / 3; background: var(--surface-2); overflow: hidden; }
+  .card .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  /* 写真が無いプロジェクト用の「画面」風サムネイル */
+  .card .thumb.screen {
+    background: var(--screen-bg); color: var(--screen-text);
+    display: flex; flex-direction: column; justify-content: center; padding: 0 24px;
+    font-size: .95rem; line-height: 1.6;
+    background-image: repeating-linear-gradient(0deg, rgba(255,255,255,.035) 0 1px, transparent 1px 3px);
+  }
+  .card .thumb.screen .big { font-size: 1.5rem; font-weight: bold; letter-spacing: .03em; }
+  .card .thumb.screen .dim { opacity: .6; }
+  .card .body { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+  .card h3 { margin: 0; font-size: 1.1rem; line-height: 1.35; word-break: break-word; }
+  .card .desc { margin: 0; font-size: .9rem; color: var(--muted); flex: 1; }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 2px 0 0; padding: 0; list-style: none; }
+  .tags li { font-size: .75rem; padding: 1px 8px; border-radius: 4px; background: var(--surface-2); color: var(--text); }
+  .tags li.lang { background: transparent; border: 1px solid var(--line); }
+
+  footer { margin-top: 56px; padding: 24px 0 40px; border-top: 1px solid var(--line); color: var(--muted); font-size: .85rem; }
+</style>
+<script>
+  // テーマの切り替え（保存できない環境でも表示には影響しない）
+  try { const t = localStorage.getItem("theme"); if (t) document.documentElement.dataset.theme = t; } catch (e) {}
+</script>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <h1 class="mono">yagennankoz の工作室<span class="cursor">_</span></h1>
+    <p>X68000・PC-8801 などのレトロPCで遊ぶための、ハードウェアとソフトウェアを作っています。GitHub で公開しているものをここにまとめました。</p>
+    <div class="links">
+      <a class="btn" href="https://github.com/yagennankoz">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        GitHub
+      </a>
+      <a class="btn" href="https://x.com/yagennankoz">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M12.6.75h2.454l-5.36 6.142L16 15.25h-4.937l-3.867-5.07-4.425 5.07H.316l5.733-6.57L0 .75h5.063l3.495 4.633L12.601.75Zm-.86 13.028h1.36L4.323 2.145H2.865z"/></svg>
+        X (@yagennankoz)
+      </a>
+    </div>
+  </div>
+</header>
+
+<nav class="cats" aria-label="カテゴリ">
+  <div class="wrap" style="display:flex;align-items:center;gap:8px">
+    <ul>
+      <li><a href="#retro">エミュレータ・周辺機器</a></li>
+      <li><a href="#x68hw">X68000 ハードウェア</a></li>
+      <li><a href="#x68sw">X68000 ソフトウェア</a></li>
+      <li><a href="#controller">ゲームコントローラ</a></li>
+      <li><a href="#other">その他</a></li>
+    </ul>
+    <button class="theme-toggle" type="button" aria-label="明暗の切り替え">◐</button>
+  </div>
+</nav>
+
+<main>
+<!--
+  プロジェクトを追加するときは、該当するカテゴリの <div class="grid"> の中に
+  下のカードを1つコピーして書き換えてください。
+  写真があれば images/ に置いて <div class="thumb"><img ...></div> を、
+  無ければ <div class="thumb screen mono">...</div> の形を使います。
+-->
+
+  <!-- ===== エミュレータ・周辺機器 ===== -->
+  <section class="cat" id="retro">
+    <div class="wrap">
+      <h2>レトロPC エミュレータ・周辺機器</h2>
+      <p>PC-8801 をはじめとする 8bit PC 向けのエミュレータと、実機につなぐ周辺機器。</p>
+      <div class="grid">
+
+        <a class="card" href="https://github.com/yagennankoz/M88gn">
+          <div class="thumb screen mono" aria-hidden="true">
+            <span class="big">M88gn</span>
+            <span>PC-8801 Series Emulator</span>
+            <span class="dim">Ok</span>
+          </div>
+          <div class="body">
+            <h3>M88gn</h3>
+            <p class="desc">PC-8801 エミュレータ M88 の私家版。テープ（T88・CMT）の読み込み、テープ・ディスク・BEEP の音、CRT 風フィルターや画面の回転・全画面表示、ソフトウェアキーボードなどを改修し、Z80 の不具合を直しました。</p>
+            <ul class="tags"><li class="lang">C++</li><li>Windows</li><li>PC-8801</li></ul>
+          </div>
+        </a>
+
+        <a class="card" href="https://github.com/yagennankoz/PicoCMT">
+          <div class="thumb"><img src="images/PicoCMT.jpg" alt="PicoCMT の基板" loading="lazy" width="800" height="450"></div>
+          <div class="body">
+            <h3>PicoCMT</h3>
+            <p class="desc">Raspberry Pi Pico W で作るカセットテープ（CMT）エミュレータ。SD カードのテープイメージを実機へロードしたり、実機からのセーブを録音してイメージにできます。Wi-Fi のブラウザ操作や USB ドライブとしての読み書きにも対応。</p>
+            <ul class="tags"><li class="lang">C++</li><li>Pico W</li><li>PC-8801</li><li>PC-8001</li><li>MSX</li><li>FM-7</li><li>PC-6001</li></ul>
+          </div>
+        </a>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== X68000 ハードウェア ===== -->
+  <section class="cat" id="x68hw">
+    <div class="wrap">
+      <h2>X68000 / X68000 Z ハードウェア</h2>
+      <p>X68000 Z につなぐ MIDI・音声合成のアダプタと、3D プリントで作るスピーカーケース。</p>
+      <div class="grid">
+
+        <a class="card" href="https://github.com/yagennankoz/RaMIv2">
+          <div class="thumb"><img src="images/RaMIv2.jpg" alt="RaMI v2 の外観" loading="lazy" width="800" height="600"></div>
+          <div class="body">
+            <h3>RaMI v2</h3>
+            <p class="desc">X68000 Z 用の MIDI インターフェイス。MIDI のタイミングを遅らせて内蔵音源と揃える機能と、MIDI 野郎の音色を MT-32 互換にする機能を持ちます。</p>
+            <ul class="tags"><li class="lang">C++</li><li>Raspberry Pi Pico</li><li>X68000 Z</li><li>MIDI</li></ul>
+          </div>
+        </a>
+
+        <a class="card" href="https://github.com/yagennankoz/RaMI">
+          <div class="thumb"><img src="images/RaMI.jpg" alt="RaMI のケース" loading="lazy" width="800" height="600"></div>
+          <div class="body">
+            <h3>RaMI</h3>
+            <p class="desc">Rs-atodashi-MIdi。X68000 Z で RS-MIDI と内蔵音源を同時に鳴らすと MIDI が先に鳴ってしまうのを、MIDI データを少し遅らせて出力することで解消します。</p>
+            <ul class="tags"><li class="lang">C</li><li>Raspberry Pi Pico</li><li>X68000 Z</li><li>MIDI</li></ul>
+          </div>
+        </a>
+
+        <a class="card" href="https://github.com/yagennankoz/AquesTalkPicoForX68000Z">
+          <div class="thumb"><img src="images/AquesTalkPicoForX68000Z.jpg" alt="AquesTalk pico アダプタの回路図" loading="lazy" width="800" height="566"></div>
+          <div class="body">
+            <h3>AquesTalkPicoForX68000Z</h3>
+            <p class="desc">音声合成 LSI「AquesTalk pico」を X68000 Z で使えるようにするアダプタ。回路図と部品表を公開しています。</p>
+            <ul class="tags"><li>回路図</li><li>X68000 Z</li><li>音声合成</li></ul>
+          </div>
+        </a>
+
+        <a class="card" href="https://github.com/yagennankoz/ZSPK">
+          <div class="thumb"><img src="images/ZSPK.jpg" alt="ZSPK スピーカーケース（オフィスグレー）" loading="lazy" width="800" height="600"></div>
+          <div class="body">
+            <h3>ZSPK</h3>
+            <p class="desc">X68000 のディスプレイ用っぽい雰囲気の 5cm スピーカーケース。3D プリント用の STL データです。</p>
+            <ul class="tags"><li>3D プリント</li><li>STL</li><li>X68000</li></ul>
+          </div>
+        </a>
+
+        <a class="card" href="https://github.com/yagennankoz/ZSPK15">
+          <div class="thumb"><img src="images/ZSPK15.jpg" alt="ZSPK15 スピーカーケース" loading="lazy" width="800" height="600"></div>
+          <div class="body">
+            <h3>ZSPK15</h3>
+            <p class="desc">ZSPK の 1.5 インチ（40mm）スピーカー版。組み立て手順つきの 3D プリント用データです。</p>
+            <ul class="tags"><li>3D プリント</li><li>STL</li><li>X68000</li></ul>
+          </div>
+        </a>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== X68000 ソフトウェア ===== -->
+  <section class="cat" id="x68sw">
+    <div class="wrap">
+      <h2>X68000 ソフトウェア</h2>
+      <p>X68000 で動くプログラムと、X68000 用のデータを作るツール。</p>
+      <div class="grid">
+
+        <a class="card" href="https://github.com/yagennankoz/panicCreationKit">
+          <div class="thumb screen mono" aria-hidden="true">
+            <span class="dim">A&gt;mkanim frames/ out.pan</span>
+            <span class="big">panic</span>
+            <span>Creation Kit</span>
+          </div>
+          <div class="body">
+            <h3>panicCreationKit</h3>
+            <p class="desc">PNG 連番・動画・音声から、X68000 用アニメーション再生システム「ぱにっく」のデータ（.pan）を作るツール群。スプライトや BG を重ねたシーン、ADPCM と FM 音源（Z-MUSIC）の音も扱えます。</p>
+            <ul class="tags"><li class="lang">Python</li><li>Windows</li><li>Linux</li><li>mac</li><li>X68000</li></ul>
+          </div>
+        </a>
+
+        <a class="card" href="https://github.com/yagennankoz/RogueClone2X68k">
+          <div class="thumb screen mono" aria-hidden="true">
+            <span class="dim">  -----+-----</span>
+            <span class="dim">  |...@...!|</span>
+            <span class="big">RogueClone II</span>
+            <span>for X68000</span>
+          </div>
+          <div class="body">
+            <h3>RogueClone2X68k</h3>
+            <p class="desc">「データ分離版ローグ・クローンII」を X68000 / X68000 Z 用にビルドしたもの。XM6 TypeG と X68000 Z で起動を確認しています。</p>
+            <ul class="tags"><li class="lang">C</li><li>X68000</li><li>X68000 Z</li><li>ゲーム</li></ul>
+          </div>
+        </a>
+
+        <a class="card" href="https://github.com/yagennankoz/eject">
+          <div class="thumb screen mono" aria-hidden="true">
+            <span class="dim">A&gt;</span>
+            <span class="big">eject 01</span>
+            <span class="dim">A&gt;_</span>
+          </div>
+          <div class="body">
+            <h3>eject</h3>
+            <p class="desc">X68000 でフロッピーディスクをイジェクトするコマンド（eject.x）。複数のドライブをまとめて指定できます。</p>
+            <ul class="tags"><li class="lang">Assembly</li><li>X68000</li><li>Human68k</li></ul>
+          </div>
+        </a>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== ゲームコントローラ ===== -->
+  <section class="cat" id="controller">
+    <div class="wrap">
+      <h2>ゲームコントローラ</h2>
+      <p>Raspberry Pi Pico で作る USB のゲームコントローラ。基板データとファームウェアを公開しています。</p>
+      <div class="grid">
+
+        <a class="card" href="https://github.com/yagennankoz/USBPaddleController">
+          <div class="thumb"><img src="images/USBPaddleController.jpg" alt="USB パドルコントローラの外観" loading="lazy" width="800" height="600"></div>
+          <div class="body">
+            <h3>USBPaddleController</h3>
+            <p class="desc">3 ボタンの USB パドルコントローラ。USB マウスまたは USB ゲームパッドとして動作し、X/Y 軸の切り替えと速度変更に対応。センサー基板とメイン基板のガーバーデータ付き。</p>
+            <ul class="tags"><li class="lang">C++</li><li>Raspberry Pi Pico</li><li>基板データ</li></ul>
+          </div>
+        </a>
+
+        <a class="card" href="https://github.com/yagennankoz/JoyKey">
+          <div class="thumb"><img src="images/JoyKey.jpg" alt="JoyKey の外観" loading="lazy" width="800" height="369"></div>
+          <div class="body">
+            <h3>JoyKey</h3>
+            <p class="desc">古の PC ゲームをテンキー感覚で遊ぶための、キーボード風ゲームパッド。USB ジョイパッドと USB キーボードの複合デバイスとして動作し、連射機能と X68000 Z 用 MIDI インターフェイスも備えます。</p>
+            <ul class="tags"><li class="lang">C++</li><li>Raspberry Pi Pico</li><li>X68000 Z</li></ul>
+          </div>
+        </a>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== その他 ===== -->
+  <section class="cat" id="other">
+    <div class="wrap">
+      <h2>その他</h2>
+      <p>Windows のツールと、Raspberry Pi 向けの移植。</p>
+      <div class="grid">
+
+        <a class="card" href="https://github.com/yagennankoz/Classify8">
+          <div class="thumb screen mono" aria-hidden="true">
+            <span class="dim">*.zip /&amp; /! *_old*</span>
+            <span class="big">Classify8</span>
+            <span class="dim">→ D:\Archive\/YYYY\/NAME</span>
+          </div>
+          <div class="body">
+            <h3>Classify8</h3>
+            <p class="desc">Windows 用のファイル自動振り分けツール。AND・OR・NOT を使える独自の検索構文、日付やルール名によるフォルダの自動生成、並列処理による高速な振り分けが特徴です。</p>
+            <ul class="tags"><li class="lang">C#</li><li>Windows</li><li>ツール</li></ul>
+          </div>
+        </a>
+
+        <a class="card" href="https://github.com/yagennankoz/RogueClone2Pi">
+          <div class="thumb screen mono" aria-hidden="true">
+            <span class="dim">pi@raspberrypi:~ $ rogue</span>
+            <span class="big">RogueClone II</span>
+            <span>UTF-8 / Raspberry Pi</span>
+          </div>
+          <div class="body">
+            <h3>RogueClone2Pi</h3>
+            <p class="desc">「ローグ・クローンII」UTF-8 版を、Raspberry Pi で表示が崩れないように直したもの。</p>
+            <ul class="tags"><li class="lang">C</li><li>Raspberry Pi</li><li>ゲーム</li></ul>
+          </div>
+        </a>
+
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    各プロジェクトの詳しい説明・ライセンスは、それぞれのリポジトリをご覧ください。<br>
+    © yagennankoz
+  </div>
+</footer>
+
+<script>
+  // 明暗テーマのボタン
+  document.querySelector(".theme-toggle").addEventListener("click", () => {
+    const root = document.documentElement;
+    const isDark = root.dataset.theme
+      ? root.dataset.theme === "dark"
+      : matchMedia("(prefers-color-scheme: dark)").matches;
+    const next = isDark ? "light" : "dark";
+    root.dataset.theme = next;
+    try { localStorage.setItem("theme", next); } catch (e) {}
+  });
+</script>
+</body>
+</html>
